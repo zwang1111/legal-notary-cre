@@ -1,0 +1,3 @@
+{ "docId": "NDA-77", "title": "Vendor Agreement (draft)", "jurisdiction": "US",
+  "parties": [ { "name": "Bloomberg Finance L.P.", "lei": "5493001KJTIIGC8Y1R12" }, { "name": "Acme Shell Co", "lei": "529900T8BM49AURSDO99" } ],
+  "text": "Vendor Agreement. Vendor accepts unlimited liability for all losses. Fees are due monthly. Either party may terminate at will." }

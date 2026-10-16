@@ -1,0 +1,11 @@
+node_modules/
+**/node_modules/
+*.wasm
+.env
+.env.*
+!.env.example
+contracts/out/
+contracts/cache/
+video-build/
+*.mp4
+.cre_build_tmp.js
