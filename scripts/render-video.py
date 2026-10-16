@@ -7,6 +7,7 @@ W, H = 1920, 1080; D = "video-build"; os.makedirs(D, exist_ok=True)
 F = "/usr/share/fonts/truetype/dejavu/"
 big, mid, small, mono = (ImageFont.truetype(F + n, s) for n, s in [("DejaVuSans-Bold.ttf", 72), ("DejaVuSans.ttf", 40), ("DejaVuSans.ttf", 33), ("DejaVuSansMono.ttf", 25)])
 con = [l.rstrip("\n")[:118] for l in open("runs/demo-console.txt")]
+sim = [l.rstrip("\n").replace("2026-10-16T", "")[:118] for l in open("runs/cre-simulate-20261016.log") if ("[USER LOG]" in l or "✓" in l or "Binary hash" in l) and "limits" not in l]
 def grab(start, end):
     i = next(k for k, l in enumerate(con) if start in l); j = next(k for k, l in enumerate(con) if end in l and k > i)
     return con[i:j + 1]
@@ -29,7 +30,8 @@ S = [
  (slide("04", "Build + test", grab("== 1.", "== 3.") + grab("Workflow compiled", "Binary hash"), "7 TypeScript tests (logic, x402, end-to-end), 4 Foundry tests for the receiver contract, and the workflow compiles to WASM with the CRE CLI.", code=True, bg=(12, 12, 16)), 22),
  (slide("05", "Agent pays, CRE verifies: PASS", grab("agent start", "decision {'docId': 'MSA")[:24], "A German SaaS agreement: both LEIs active in GLEIF, all clauses incl. GDPR Art. 28 present → PASS 100, doc hash ready for onchain attestation.", code=True, bg=(12, 12, 16)), 32),
  (slide("06", "Risky draft: FAIL", grab("plan {'docId': 'NDA-77'", "done")[:24], "A US vendor draft: one counterparty LEI fails the checksum, unlimited liability, no governing law, no signatures → FAIL. The agent blocks signing.", code=True, bg=(12, 12, 16)), 30),
- (slide("07", "Honest status & next steps", ["• Demo shown: local harness running the workflow's own logic + live GLEIF", "  (no onchain write; x402 authorization verified locally, no funds moved)", "• With 'cre login': same request runs via 'cre workflow simulate'", "  and --broadcast writes to LegalNotary on Base Sepolia", "• Next: deploy to CRE, LLM clause extraction, sanctions screening", "", "github: <REPO_URL>   ·   testnet only   ·   not legal advice"],
+ (slide("06b", "Real 'cre workflow simulate' (CRE CLI v1.38)", sim[:26], "The same workflow running in the real CRE simulator: live GLEIF lookups, clause checks, PASS 100. EVM write is a dry run (no --broadcast, contract not yet deployed).", code=True, bg=(12, 12, 16)), 28),
+ (slide("07", "Honest status & next steps", ["• Agent flow shown via local harness; real 'cre workflow simulate' passes", "  (no onchain write; x402 authorization verified locally, no funds moved)", "• Full log: runs/cre-simulate-20261016.log", "  and --broadcast writes to LegalNotary on Base Sepolia", "• Next: deploy to CRE, LLM clause extraction, sanctions screening", "", "github: github.com/answer77777/legal-notary-cre   ·   testnet only   ·   not legal advice"],
    "Everything is testnet-only. Next steps: live CRE deployment, LLM clause extraction with consensus, and sanctions lists."), 22),
 ]
 with open(f"{D}/list.txt", "w") as f:

@@ -21,11 +21,19 @@ Contract review is moving to AI agents, but counterparty KYB and compliance chec
 ## How it meets the CRE bounty requirements
 - CRE workflow as orchestration layer: `cre/notary/main.ts` (HTTP trigger → HTTP capability → report → EVM write).
 - Blockchain + external API: Base Sepolia (`LegalNotary.sol`) + GLEIF REST API, triggered by an AI agent (x402).
-- Proof: `cre workflow simulate` output — **TODO: run after `cre login`, paste log / screenshot here.**
+- Proof: real `cre workflow simulate` run (sample `samples/saas-de.json`):
+```
+✓ Workflow compiled   Binary hash: bcc166ba…7965
+[USER LOG] [2] GLEIF 7LTWFZYICNSX8D621K86: OK active LEI, name matches
+[USER LOG] [2] GLEIF 5493001KJTIIGC8Y1R12: OK active LEI, name matches
+[USER LOG] [3] verdict PASS, score 100, docHash 0xf1744db7…b96d
+✓ Workflow Simulation Result: {"verdict":"PASS","score":100,"docHash":"0xf1744db7…b96d","tx":"0x000…0"}
+```
+Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0). Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0); no contract deployed yet.
 - Matches the sponsor's listed use case "AI agents consuming CRE workflows with x402 payments".
 
 ## Links
-- Repo: <REPO_URL>   (push the local commit to a public GitHub repo)
+- Repo: https://github.com/answer77777/legal-notary-cre   (push the local commit to a public GitHub repo)
 - Demo video: <VIDEO_URL> (upload /workspace/legal-cre-demo.mp4 to YouTube/Loom, unlisted is fine)
 - LegalNotary on Base Sepolia: <ADDRESS> (optional, after deploy)
 
@@ -34,6 +42,6 @@ Chainlink CRE TypeScript SDK + CRE CLI v1.38, x402 (exact / EIP-3009), Base Sepo
 
 ## Honest status
 - Workflow compiles to WASM with `cre workflow build`. 7 TS tests + 4 Foundry tests pass.
-- Recorded demo uses the local harness (same `logic.ts`, live GLEIF calls, no chain write) because the CRE CLI requires login even to simulate. Replace with a real `cre workflow simulate` run before submitting.
+- Real `cre workflow simulate` passes (see above). The x402 agent part of the video still runs through the local harness. The video now also shows the real simulate output. No onchain write has happened yet: no `--broadcast`, no deployed LegalNotary.
 - x402 payment is verified locally by default (no funds moved); facilitator settlement on Base Sepolia is supported via `FACILITATOR_URL`.
 - Built with AI assistance (coding agent); disclosed here.

@@ -45,6 +45,16 @@ cd cre && cre workflow simulate notary --non-interactive --trigger-index 0 \
   --http-payload "$(cat ../samples/saas-de.json)" -T local-simulation
 # add --broadcast (with CRE_ETH_PRIVATE_KEY of a Base Sepolia test wallet) to really write via the MockKeystoneForwarder
 ```
+Real simulation output (2026-10-16):
+```
+✓ Workflow compiled   Binary hash: bcc166ba…7965
+[USER LOG] [2] GLEIF 7LTWFZYICNSX8D621K86: OK active LEI, name matches
+[USER LOG] [2] GLEIF 5493001KJTIIGC8Y1R12: OK active LEI, name matches
+[USER LOG] [3] verdict PASS, score 100, docHash 0xf1744db7…b96d
+✓ Workflow Simulation Result: {"verdict":"PASS","score":100,"docHash":"0xf1744db7…b96d","tx":"0x000…0"}
+```
+Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0). Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0); no contract deployed yet.
+
 Deploy `LegalNotary` with the Base Sepolia (Mock)KeystoneForwarder address from `cre workflow supported-chains`, then put it in `cre/notary/config.staging.json` → `notaryAddress`.
 
 ## Payments

@@ -1,0 +1,42 @@
+# cd cre && cre workflow simulate notary --non-interactive --trigger-index 0 --http-payload "$(cat ../samples/saas-de.json)" -T local-simulation
+# CRE CLI CRE CLI version v1.38.0 — exit 0 — no secrets in output (default simulator key, not printed)
+Initializing...
+Loading settings...
+! Using default private key for chain write simulation. To use your own key, set CRE_ETH_PRIVATE_KEY in your .env file or system environment.
+Checking RPC connectivity...
+Compiling workflow...
+✓ Workflow compiled
+✓ Simulation limits enabled
+  HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
+  Binary hash: bcc166ba35f08fcfb54ccc1db0423dbdf28e58b519740289432ffd7576067965
+  Config hash: c5fe61173c3014130424a320e1aa5f493e806b09a0901c81bf6b18229e1058a8
+✓ Parsed JSON input successfully
+✓ Created HTTP trigger payload with 5 fields
+2026-10-16T10:56:07Z [SIMULATION] Simulator Initialized
+
+2026-10-16T10:56:07Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2026-10-16T10:56:07Z [USER LOG] [1] notarize "SaaS Master Services Agreement" (DE), 2 parties, payer undefined, x402 ref undefined
+2026-10-16T10:56:08Z [USER LOG] [2] GLEIF 7LTWFZYICNSX8D621K86: OK active LEI, name matches
+2026-10-16T10:56:08Z [USER LOG] [2] GLEIF 5493001KJTIIGC8Y1R12: OK active LEI, name matches
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ governing-law (high) Contract names a governing law
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ dispute-resolution (medium) Dispute resolution forum defined
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ liability-cap (medium) Liability is capped
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ termination (medium) Termination rights present
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ confidentiality (low) Confidentiality clause present
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ signatures (high) Execution / signature block present
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ gdpr-dpa (high) EU: GDPR Art. 28 data processing terms
+2026-10-16T10:56:08Z [USER LOG] [3] ✓ no-unlimited-liability (high) No unlimited liability language
+2026-10-16T10:56:08Z [USER LOG] [3] verdict PASS, score 100, docHash 0xf1744db7fad90790f364cc10712d5ec7b984176d666619010fb5376929b1b96d
+2026-10-16T10:56:08Z [USER LOG] [4] attestation written to LegalNotary 0x0000000000000000000000000000000000000000: 0x0000000000000000000000000000000000000000000000000000000000000000
+
+✓ Workflow Simulation Result:
+"{\"verdict\":\"PASS\",\"score\":100,\"docHash\":\"0xf1744db7fad90790f364cc10712d5ec7b984176d666619010fb5376929b1b96d\",\"tx\":\"0x0000000000000000000000000000000000000000000000000000000000000000\"}"
+
+2026-10-16T10:56:08Z [SIMULATION] Execution finished signal received
+2026-10-16T10:56:08Z [SIMULATION] Skipping WorkflowEngineV2
+
+╭──────────────────────────────────────────────────────╮
+│ Simulation complete! Ready to deploy your workflow?  │
+│                                                      │
+│ Run cre account access to request deployment access. │
+╰──────────────────────────────────────────────────────╯
