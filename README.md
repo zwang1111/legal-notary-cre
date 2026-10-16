@@ -57,3 +57,7 @@ does **not** settle — no funds move. Set `FACILITATOR_URL=https://x402.org/fac
 ## Reuse
 x402 buyer/provider structure and video renderer adapted from `climate-x402`; agent spend-policy idea from `celo-agent`.
 Built with AI assistance (coding agent); all code reviewed and tested.
+
+## Demo video
+
+[`demo.mp4`](demo.mp4) (≈3.4 MB) – end-to-end run: x402 payment → CRE workflow → verdict/attestation.
