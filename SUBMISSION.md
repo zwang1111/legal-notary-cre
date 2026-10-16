@@ -33,7 +33,7 @@ Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0)
 - Matches the sponsor's listed use case "AI agents consuming CRE workflows with x402 payments".
 
 ## Links
-- Repo: https://github.com/answer77777/legal-notary-cre   (push the local commit to a public GitHub repo)
+- Repo: https://github.com/a15326623633-netizen/legal-notary-cre   (push the local commit to a public GitHub repo)
 - Demo video: <VIDEO_URL> (upload /workspace/legal-cre-demo.mp4 to YouTube/Loom, unlisted is fine)
 - LegalNotary on Base Sepolia: <ADDRESS> (optional, after deploy)
 
