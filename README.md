@@ -18,6 +18,8 @@ agent ──X-PAYMENT (EIP-3009 sig)──▶ gateway verifies ──HTTP trigge
    CRE: GLEIF lookups ▸ clause checks ▸ report ▸ writeReport ▸ LegalNotary.sol (Base Sepolia)
 ```
 
+Full sequence diagram, trust model and evidence: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## Layout
 | path | what |
 |---|---|
@@ -53,7 +55,13 @@ Real simulation output (2026-10-16):
 [USER LOG] [3] verdict PASS, score 100, docHash 0xf1744db7…b96d
 ✓ Workflow Simulation Result: {"verdict":"PASS","score":100,"docHash":"0xf1744db7…b96d","tx":"0x000…0"}
 ```
-Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0). Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0); no contract deployed yet.
+Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0).
+
+End-to-end with the paying agent (2026-10-17, `CRE_MODE=simulate scripts/demo.sh`): agent gets 402, signs the EIP-3009 authorization, and the gateway
+runs the **real `cre workflow simulate`** with the payer address and x402 reference in the payload. Results: PASS 100 (DE MSA) and FAIL 22 (US draft, bad LEI checksum,
+unlimited liability). Log: `runs/demo-20261017-130655.log`; console: `runs/demo-console.txt`.
+
+Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0); no contract deployed yet.
 
 Deploy `LegalNotary` with the Base Sepolia (Mock)KeystoneForwarder address from `cre workflow supported-chains`, then put it in `cre/notary/config.staging.json` → `notaryAddress`.
 
@@ -70,4 +78,8 @@ Built with AI assistance (coding agent); all code reviewed and tested.
 
 ## Demo video
 
-[`demo.mp4`](demo.mp4) (≈3.4 MB) – end-to-end run: x402 payment → CRE workflow → verdict/attestation.
+[`demo.mp4`](demo.mp4) (3:48, ≈4 MB, silent with captions): x402 payment → real `cre workflow simulate` → verdict/attestation. Download it, or use the raw link:
+https://github.com/zwang1111/legal-notary-cre/raw/main/demo.mp4
+
+## License
+MIT (see `LICENSE`).

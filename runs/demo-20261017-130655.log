@@ -1,0 +1,34 @@
+{"step":"agent start","agent":"0x890ea4789201ac5769463EB791862b499527674A","budget":"100000","maxPerCall":"50000"}
+{"step":"plan","docId":"MSA-2026-0042","action":"request CRE notarization (KYB + compliance + attestation)"}
+{"step":"402 challenge","docId":"MSA-2026-0042","amount":"10000","asset":"0x036CbD53842c5426634e7929541eC2318f3dCF7e","network":"base-sepolia","payTo":"0x000000000000000000000000000000000000dEaD"}
+{"step":"paid + CRE result","docId":"MSA-2026-0042","status":200,"mode":"simulate","verdict":"PASS","score":100,"docHash":"0xf1744db7fad90790f364cc10712d5ec7b984176d666619010fb5376929b1b96d","tx":"0x0000000000000000000000000000000000000000000000000000000000000000","logs":["Compiling workflow...","✓ Workflow compiled","✓ Simulation limits enabled","✓ Parsed JSON input successfully","✓ Created HTTP trigger payload with 7 fields","2026-10-17T13:07:10Z [USER LOG] [1] notarize \"SaaS Master Services Agreement\" (DE), 2 parties, payer 0x890ea4789201ac5769463EB791862b499527674A, x402 ref 0xe9af2269246e57c2c9ce3471762f96fc4bec8bcd4c06511ebe70ca114d49f73e","2026-10-17T13:07:11Z [USER LOG] [2] GLEIF 7LTWFZYICNSX8D621K86: OK active LEI, name matches","2026-10-17T13:07:12Z [USER LOG] [2] GLEIF 5493001KJTIIGC8Y1R12: OK active LEI, name matches","2026-10-17T13:07:12Z [USER LOG] [3] ✓ governing-law (high) Contract names a governing law","2026-10-17T13:07:12Z [USER LOG] [3] ✓ dispute-resolution (medium) Dispute resolution forum defined","2026-10-17T13:07:12Z [USER LOG] [3] ✓ liability-cap (medium) Liability is capped","2026-10-17T13:07:12Z [USER LOG] [3] ✓ termination (medium) Termination rights present","2026-10-17T13:07:12Z [USER LOG] [3] ✓ confidentiality (low) Confidentiality clause present","2026-10-17T13:07:12Z [USER LOG] [3] ✓ signatures (high) Execution / signature block present","2026-10-17T13:07:12Z [USER LOG] [3] ✓ gdpr-dpa (high) EU: GDPR Art. 28 data processing terms","2026-10-17T13:07:12Z [USER LOG] [3] ✓ no-unlimited-liability (high) No unlimited liability language","2026-10-17T13:07:12Z [USER LOG] [3] verdict PASS, score 100, docHash 0xf1744db7fad90790f364cc10712d5ec7b984176d666619010fb5376929b1b96d","2026-10-17T13:07:12Z [USER LOG] [4] attestation written to LegalNotary 0x0000000000000000000000000000000000000000: 0x0000000000000000000000000000000000000000000000000000000000000000","✓ Workflow Simulation Result:","\"{\\\"verdict\\\":\\\"PASS\\\",\\\"score\\\":100,\\\"docHash\\\":\\\"0xf1744db7fad90790f364cc10712d5ec7b984176d666619010fb5376929b1b96d\\\",\\\"tx\\\":\\\"0x0000000000000000000000000000000000000000000000000000000000000000\\\"}\"","2026-10-17T13:07:12Z [SIMULATION] Skipping WorkflowEngineV2","│ Simulation complete! Ready to deploy your workflow?  │"],"settle":{"success":true,"network":"base-sepolia","payer":"0x890ea4789201ac5769463EB791862b499527674A","transaction":""}}
+{"step":"decision","docId":"MSA-2026-0042","action":"file as executed; share attestation hash with counterparty"}
+{"step":"plan","docId":"NDA-77","action":"request CRE notarization (KYB + compliance + attestation)"}
+{"step":"402 challenge","docId":"NDA-77","amount":"10000","asset":"0x036CbD53842c5426634e7929541eC2318f3dCF7e","network":"base-sepolia","payTo":"0x000000000000000000000000000000000000dEaD"}
+{"step":"paid + CRE result","docId":"NDA-77","status":200,"mode":"simulate","verdict":"FAIL","score":22,"docHash":"0xcbea6f4feb9d558610f09f74346b5fcc5f7e1908395b39a582b38b4cd128c55c","tx":"0x0000000000000000000000000000000000000000000000000000000000000000","logs":["Compiling workflow...","✓ Workflow compiled","✓ Simulation limits enabled","✓ Parsed JSON input successfully","✓ Created HTTP trigger payload with 7 fields","2026-10-17T13:07:18Z [USER LOG] [1] notarize \"Vendor Agreement (draft)\" (US), 2 parties, payer 0x890ea4789201ac5769463EB791862b499527674A, x402 ref 0x08a983e15e5ef8bd65a6447afe3e8987458a721c44622649042218dd5ca320e8","2026-10-17T13:07:19Z [USER LOG] [2] GLEIF 5493001KJTIIGC8Y1R12: OK active LEI, name matches","2026-10-17T13:07:19Z [USER LOG] [2] GLEIF 529900T8BM49AURSDO99: FAIL invalid LEI checksum","2026-10-17T13:07:19Z [USER LOG] [3] ✗ governing-law (high) Contract names a governing law","2026-10-17T13:07:19Z [USER LOG] [3] ✗ dispute-resolution (medium) Dispute resolution forum defined","2026-10-17T13:07:19Z [USER LOG] [3] ✗ liability-cap (medium) Liability is capped","2026-10-17T13:07:19Z [USER LOG] [3] ✓ termination (medium) Termination rights present","2026-10-17T13:07:19Z [USER LOG] [3] ✗ confidentiality (low) Confidentiality clause present","2026-10-17T13:07:19Z [USER LOG] [3] ✗ signatures (high) Execution / signature block present","2026-10-17T13:07:19Z [USER LOG] [3] ✗ us-state-law (low) US: names the governing state","2026-10-17T13:07:19Z [USER LOG] [3] ✗ no-unlimited-liability (high) Contains unlimited liability language","2026-10-17T13:07:19Z [USER LOG] [3] verdict FAIL, score 22, docHash 0xcbea6f4feb9d558610f09f74346b5fcc5f7e1908395b39a582b38b4cd128c55c","2026-10-17T13:07:19Z [USER LOG] [4] attestation written to LegalNotary 0x0000000000000000000000000000000000000000: 0x0000000000000000000000000000000000000000000000000000000000000000","✓ Workflow Simulation Result:","\"{\\\"verdict\\\":\\\"FAIL\\\",\\\"score\\\":22,\\\"docHash\\\":\\\"0xcbea6f4feb9d558610f09f74346b5fcc5f7e1908395b39a582b38b4cd128c55c\\\",\\\"tx\\\":\\\"0x0000000000000000000000000000000000000000000000000000000000000000\\\"}\"","2026-10-17T13:07:19Z [SIMULATION] Skipping WorkflowEngineV2","│ Simulation complete! Ready to deploy your workflow?  │"],"settle":{"success":true,"network":"base-sepolia","payer":"0x890ea4789201ac5769463EB791862b499527674A","transaction":""}}
+{"step":"decision","docId":"NDA-77","action":"block signing; notify counterparty of failed KYB/clauses"}
+{"step":"done","spent":"20000","calls":2}
+[
+    {
+        "t": "2026-10-17T05:07:12.543Z",
+        "payer": "0x890ea4789201ac5769463EB791862b499527674A",
+        "amount": "10000",
+        "docId": "MSA-2026-0042",
+        "verdict": "PASS",
+        "settlement": {
+            "success": true,
+            "mode": "verified-locally (no settlement, no funds moved)"
+        }
+    },
+    {
+        "t": "2026-10-17T05:07:19.903Z",
+        "payer": "0x890ea4789201ac5769463EB791862b499527674A",
+        "amount": "10000",
+        "docId": "NDA-77",
+        "verdict": "FAIL",
+        "settlement": {
+            "success": true,
+            "mode": "verified-locally (no settlement, no funds moved)"
+        }
+    }
+]
