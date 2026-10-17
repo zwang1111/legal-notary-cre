@@ -1,5 +1,7 @@
 # Legal Notary architecture
 
+> Status: simulated end to end with `cre workflow simulate`. The EVM write targets `LegalNotary` on Base Sepolia; deployment is ready but not executed, so the write is a dry run (tx `0x0`).
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -7,7 +9,7 @@ sequenceDiagram
     participant G as x402 gateway (Hono)
     participant W as CRE workflow "legal-notary" (DON)
     participant L as GLEIF API
-    participant C as LegalNotary.sol (Base Sepolia)
+    participant C as LegalNotary.sol (Base Sepolia target, not deployed yet)
     A->>G: POST /notarize {contract, parties}
     G-->>A: 402 Payment Required (exact, base-sepolia, USDC, 10000 = 0.01)
     A->>A: check per-call cap and budget, sign EIP-3009 authorization

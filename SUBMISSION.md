@@ -9,18 +9,18 @@
 Legal Notary — x402-paid CRE workflow for contract KYB, compliance and onchain attestation
 
 ## One-liner
-AI paralegal agents pay 0.01 USDC per call (x402) to a Chainlink CRE workflow that verifies counterparties in GLEIF, checks the contract's clauses for its jurisdiction, and notarizes the result on Base Sepolia.
+AI paralegal agents pay 0.01 USDC per call (x402) to a Chainlink CRE workflow that verifies counterparties in GLEIF, checks the contract's clauses for its jurisdiction, and produces a signed attestation whose on-chain write target is a Base Sepolia contract (simulated end to end with `cre workflow simulate`; deployment ready, not executed).
 
 ## Description
 Contract review is moving to AI agents, but counterparty KYB and compliance checks remain manual, private and unprovable. Legal Notary turns them into a pay-per-call, verifiable service:
 1. The agent POSTs a contract to an x402-protected endpoint and gets HTTP 402 (exact scheme, Base Sepolia USDC).
 2. It signs an EIP-3009 authorization under its spend policy and retries; the gateway verifies the payment and triggers the CRE workflow over HTTP.
-3. The CRE workflow (TypeScript SDK) looks up each party's LEI in the GLEIF API with DON consensus, runs a deterministic clause checklist (governing law, forum, liability cap, termination, confidentiality, signatures, GDPR Art. 28 for EU, no unlimited liability), and writes a signed report (doc hash, verdict, score, payer, jurisdiction, findings hash) to the LegalNotary receiver contract.
+3. The CRE workflow (TypeScript SDK) looks up each party's LEI in the GLEIF API with DON consensus, runs a deterministic clause checklist (governing law, forum, liability cap, termination, confidentiality, signatures, GDPR Art. 28 for EU, no unlimited liability), and produces a signed report (doc hash, verdict, score, payer, jurisdiction, findings hash) for the LegalNotary receiver contract on Base Sepolia. In the current simulation the EVM write is a dry run.
 4. The agent files, escalates or blocks the contract depending on the verdict. Only hashes go onchain.
 
 ## How it meets the CRE bounty requirements
 - CRE workflow as orchestration layer: `cre/notary/main.ts` (HTTP trigger → HTTP capability → report → EVM write).
-- Blockchain + external API: Base Sepolia (`LegalNotary.sol`) + GLEIF REST API, triggered by an AI agent (x402).
+- Blockchain + external API: EVM write targeting `LegalNotary.sol` on Base Sepolia (dry run in simulation, not deployed yet) + GLEIF REST API, triggered by an AI agent (x402).
 - Proof: real `cre workflow simulate` run (sample `samples/saas-de.json`):
 ```
 ✓ Workflow compiled   Binary hash: bcc166ba…7965
@@ -36,7 +36,9 @@ Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0)
 - Repo: https://github.com/zwang1111/legal-notary-cre (public, MIT)
 - Architecture: https://github.com/zwang1111/legal-notary-cre/blob/main/docs/ARCHITECTURE.md
 - Demo video: https://github.com/zwang1111/legal-notary-cre/blob/main/demo.mp4 (raw: https://github.com/zwang1111/legal-notary-cre/raw/main/demo.mp4). A YouTube/Loom mirror would play inline for judges; not uploaded yet.
-- LegalNotary on Base Sepolia: not deployed (optional; the bounty accepts a CRE CLI simulation)
+- Simulation log: https://github.com/zwang1111/legal-notary-cre/blob/main/runs/cre-simulate-20261016.log
+- LegalNotary on Base Sepolia: deployment ready but not executed (optional; the bounty accepts a CRE CLI simulation)
+- Updated BUIDL description: `DORAHACKS_DESCRIPTION.md`
 
 ## Tech
 Chainlink CRE TypeScript SDK + CRE CLI v1.38, x402 (exact / EIP-3009), Base Sepolia, USDC, Solidity 0.8 (Foundry), Hono, viem, GLEIF API.
