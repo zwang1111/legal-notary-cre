@@ -3,15 +3,14 @@
 > 📐 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (sequence diagram, components, trust model, evidence)
 > · 🎬 **Video:** [`demo.mp4`](demo.mp4) · 🧪 **Simulation log:** [`runs/cre-simulate-20261016.log`](runs/cre-simulate-20261016.log)
 
-> **Status:** the CRE workflow is **simulated end to end with `cre workflow simulate`** (CRE CLI v1.38.0), including the x402-paying agent.
-> The on-chain write target is the `LegalNotary` receiver contract on **Base Sepolia**; in the simulation the EVM write is a dry run (no `--broadcast`, tx hash `0x0`).
-> Deployment is scripted and **not executed**: `LegalNotary` is not deployed yet and no attestation has been written on-chain.
-> Run `scripts/deploy-base-sepolia.sh` once a funded key and CRE login are available. What that run still needs is listed in [`BLOCKERS.md`](BLOCKERS.md). Do not treat a `0x0` hash as an attestation.
+> **Status:** `LegalNotary` is **deployed on Base Sepolia** and a real attestation was written with `cre workflow simulate --broadcast` (CRE CLI v1.38.0).
+> Contract: [`0x8e457Ed0e713094e4AB70a098233E5816A44271B`](https://sepolia.basescan.org/address/0x8e457Ed0e713094e4AB70a098233E5816A44271B) · deploy tx [`0x40a5895c…7159`](https://sepolia.basescan.org/tx/0x40a5895c731fb2127d6e3a70e2fcfa012b06cad2b932bd79ea7a0a12f61f7159) · attestation tx [`0x16904215…b119`](https://sepolia.basescan.org/tx/0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119) (`count()=1`, MockKeystoneForwarder).
+> Record: [`deployments/base-sepolia.json`](deployments/base-sepolia.json) · log: [`runs/broadcast-20261022T170550Z.log`](runs/broadcast-20261022T170550Z.log). Dry-run `0x0` hashes are not attestations; this one is non-zero and receipt-verified.
 
 An AI paralegal agent pays **0.01 USDC per call via x402** to run a **Chainlink CRE workflow** that
 1. verifies every contracting party's **LEI against the GLEIF API** (CRE HTTP capability, DON consensus),
 2. runs a **deterministic clause-compliance checklist** for the contract's jurisdiction (GDPR Art. 28 for EU, governing law, liability cap, signatures, …),
-3. signs a **CRE report** and targets the **`LegalNotary` receiver on Base Sepolia** (CRE EVM write capability) with the attestation (doc hash, verdict, score, payer, jurisdiction). In the current simulation this write is a dry run; the contract is not deployed yet.
+3. signs a **CRE report** and writes to the **`LegalNotary` receiver on Base Sepolia** (CRE EVM write capability) with the attestation (doc hash, verdict, score, payer, jurisdiction). A Base Sepolia broadcast has been executed; see Status and Deployment below.
 
 The agent then acts on the verdict: `PASS` → file, `REVIEW` → route to a lawyer, `FAIL` → block signing.
 The document itself never goes onchain, only its keccak256 hash. Not legal advice; it's an audit trail.
@@ -23,7 +22,7 @@ Built for BLI Legal Tech Hackathon 2, Chainlink "Best workflow with CRE" bounty.
 ```
 agent ──POST /notarize──▶ x402 gateway ──402 {exact, base-sepolia, USDC, 10000}──▶ agent
 agent ──X-PAYMENT (EIP-3009 sig)──▶ gateway verifies ──HTTP trigger──▶ CRE workflow legal-notary
-   CRE: GLEIF lookups ▸ clause checks ▸ report ▸ writeReport ▸ LegalNotary.sol (Base Sepolia target; dry run in simulation)
+   CRE: GLEIF lookups ▸ clause checks ▸ report ▸ writeReport ▸ LegalNotary.sol (Base Sepolia; live write via MockKeystoneForwarder)
 ```
 
 Full sequence diagram, trust model and evidence: **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
@@ -72,17 +71,27 @@ End-to-end with the paying agent (2026-10-17, `CRE_MODE=simulate scripts/demo.sh
 runs the **real `cre workflow simulate`** with the payer address and x402 reference in the payload. Results: PASS 100 (DE MSA) and FAIL 22 (US draft, bad LEI checksum,
 unlimited liability). Log: `runs/demo-20261017-130655.log`; console: `runs/demo-console.txt`.
 
-Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0).
+Earlier dry runs without `--broadcast` (and with `notaryAddress` still 0x0) returned tx hash 0x0. That is not an on-chain write; the Base Sepolia broadcast above is.
 
-## Deployment (scripted, not executed)
-`LegalNotary` has **not** been deployed, and no on-chain write has happened. `cre/notary/config.staging.json` still has `notaryAddress` `0x0`.
+## Deployment (Base Sepolia executed)
 
-`scripts/deploy-base-sepolia.sh` is the path a funded test key runs:
+| field | value |
+|---|---|
+| network | Base Sepolia (`84532`, `ethereum-testnet-sepolia-base-1`) |
+| `LegalNotary` | [`0x8e457Ed0e713094e4AB70a098233E5816A44271B`](https://sepolia.basescan.org/address/0x8e457Ed0e713094e4AB70a098233E5816A44271B) |
+| deploy tx | [`0x40a5895c731fb2127d6e3a70e2fcfa012b06cad2b932bd79ea7a0a12f61f7159`](https://sepolia.basescan.org/tx/0x40a5895c731fb2127d6e3a70e2fcfa012b06cad2b932bd79ea7a0a12f61f7159) |
+| attestation tx | [`0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119`](https://sepolia.basescan.org/tx/0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119) |
+| forwarder | MockKeystoneForwarder `0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5` |
+| `count()` after broadcast | `1` |
+| record | [`deployments/base-sepolia.json`](deployments/base-sepolia.json) |
+| log | [`runs/broadcast-20261022T170550Z.log`](runs/broadcast-20261022T170550Z.log) |
+
+`cre/notary/config.staging.json` now points at that notary. Re-run path for a funded test key:
 
 1. Copy `.env.example` to `.env` (gitignored). Set `CRE_ETH_PRIVATE_KEY` and either `cre login` or `CRE_API_KEY`.
 2. `scripts/deploy-base-sepolia.sh --check` confirms Base Sepolia chain id 84532 and that both forwarders have bytecode. It does not send a transaction.
-3. `scripts/deploy-base-sepolia.sh` deploys `LegalNotary` with the Base Sepolia **MockKeystoneForwarder** (`cre/notary/forwarders.json`), writes that address into `cre/notary/config.staging.json`, then runs `cre workflow simulate notary --broadcast`.
-4. The script exits 0 only after `cast receipt` shows a successful log from that notary and `count()` is non-zero. It writes `deployments/base-sepolia.json` and `runs/broadcast-<utc>.log`. A dry-run hash of `0x0` is a failure.
+3. Prefer `FORWARDER=0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5 FORWARDER_KIND=mock scripts/deploy-base-sepolia.sh` so the constructor matches what `simulate --broadcast` calls (do not let a tenant production forwarder override).
+4. The script exits 0 only after `cast receipt` shows a successful log from that notary and `count()` is non-zero. A dry-run hash of `0x0` is a failure.
 
 Constructor argument for this broadcast path, checked against the [CRE forwarder directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts) on 2026-10-22:
 

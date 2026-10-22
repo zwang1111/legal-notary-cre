@@ -1,5 +1,5 @@
 {
   "publicKey": "",
   "gleifBase": "https://api.gleif.org/api/v1",
-  "evms": [{ "notaryAddress": "0x0000000000000000000000000000000000000000", "chainSelectorName": "ethereum-testnet-sepolia-base-1", "gasLimit": "500000" }]
+  "evms": [{ "notaryAddress": "0x8e457Ed0e713094e4AB70a098233E5816A44271B", "chainSelectorName": "ethereum-testnet-sepolia-base-1", "gasLimit": "500000" }]
 }
