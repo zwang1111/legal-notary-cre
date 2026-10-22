@@ -1,0 +1,9 @@
+{
+  "chainId": 84532,
+  "chainSelectorName": "ethereum-testnet-sepolia-base-1",
+  "source": "https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts",
+  "sourceChecked": "2026-10-22",
+  "note": "simulate --broadcast delivers reports through MockKeystoneForwarder. cre workflow supported-chains (CLI >= 1.15) returns that tenant mock address; the deploy script uses it when you are logged in and it differs from the pin below. KeystoneForwarder is only for a workflow registered with cre workflow deploy. Do not pass it to a contract you will exercise with simulate --broadcast.",
+  "mockKeystoneForwarder": "0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5",
+  "keystoneForwarder": "0xF8344CFd5c43616a4366C34E3EEE75af79a74482"
+}

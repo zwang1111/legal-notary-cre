@@ -37,14 +37,14 @@ Full log: `runs/cre-simulate-20261016.log` (CRE CLI v1.38.0, 2026-10-16, exit 0)
 - Architecture: https://github.com/zwang1111/legal-notary-cre/blob/main/docs/ARCHITECTURE.md
 - Demo video: https://github.com/zwang1111/legal-notary-cre/blob/main/demo.mp4 (raw: https://github.com/zwang1111/legal-notary-cre/raw/main/demo.mp4). A YouTube/Loom mirror would play inline for judges; not uploaded yet.
 - Simulation log: https://github.com/zwang1111/legal-notary-cre/blob/main/runs/cre-simulate-20261016.log
-- LegalNotary on Base Sepolia: deployment ready but not executed (optional; the bounty accepts a CRE CLI simulation)
+- LegalNotary on Base Sepolia: not deployed. `scripts/deploy-base-sepolia.sh` is the broadcast path (MockKeystoneForwarder `0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5`). It was not run: no funded key and no CRE login. See `BLOCKERS.md`. The bounty still has the CRE CLI simulation above.
 - Updated BUIDL description: `DORAHACKS_DESCRIPTION.md`
 
 ## Tech
 Chainlink CRE TypeScript SDK + CRE CLI v1.38, x402 (exact / EIP-3009), Base Sepolia, USDC, Solidity 0.8 (Foundry), Hono, viem, GLEIF API.
 
 ## Honest status
-- Workflow compiles to WASM with `cre workflow build`. 7 TS tests + 4 Foundry tests pass.
-- Real `cre workflow simulate` passes, standalone and end-to-end behind the x402 gateway (2026-10-17: PASS 100 / FAIL 22, payer + x402 ref passed into the workflow; `runs/demo-20261017-130655.log`). The video shows this run. No onchain write has happened yet: no `--broadcast`, no deployed LegalNotary.
+- Workflow compiles to WASM with `cre workflow build`. 8 TS tests + 4 Foundry tests pass.
+- Real `cre workflow simulate` passes, standalone and end-to-end behind the x402 gateway (2026-10-17: PASS 100 / FAIL 22, payer + x402 ref passed into the workflow; `runs/demo-20261017-130655.log`). The video shows this run. No onchain write has happened: no `--broadcast`, no deployed LegalNotary. `scripts/deploy-base-sepolia.sh` is ready and refuses a zero tx hash; the secrets it needs are in `BLOCKERS.md`.
 - x402 payment is verified locally by default (no funds moved); facilitator settlement on Base Sepolia is supported via `FACILITATOR_URL`.
 - Built with AI assistance (coding agent); disclosed here.

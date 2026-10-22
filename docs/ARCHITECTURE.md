@@ -1,6 +1,6 @@
 # Legal Notary architecture
 
-> Status: simulated end to end with `cre workflow simulate`. The EVM write targets `LegalNotary` on Base Sepolia; deployment is ready but not executed, so the write is a dry run (tx `0x0`).
+> Status: simulated end to end with `cre workflow simulate`. The EVM write targets `LegalNotary` on Base Sepolia. `scripts/deploy-base-sepolia.sh` is the deploy and `--broadcast` path; it has not been executed, so the write is still a dry run (tx `0x0`). See `BLOCKERS.md`.
 
 ```mermaid
 sequenceDiagram
@@ -45,3 +45,4 @@ sequenceDiagram
 - `runs/demo-20261017-130655.log`: end-to-end run. The agent pays via x402, the gateway triggers the real `cre workflow simulate`, and the payer and x402 reference reach the workflow. Results: PASS 100 (DE SaaS MSA) and FAIL 22 (US draft).
 - `runs/cre-simulate-20261016.log`: standalone `cre workflow simulate` (CRE CLI v1.38.0).
 - The EVM write is a dry run (no `--broadcast`, `notaryAddress` = 0x0). The CRE CLI prints local time with a `Z` suffix; the real UTC time is 8 hours earlier.
+- `scripts/deploy-base-sepolia.sh` deploys `LegalNotary` with the Base Sepolia MockKeystoneForwarder and only then runs `cre workflow simulate --broadcast`. No deployment record is in this repo, because that command has not produced a receipt.

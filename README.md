@@ -5,7 +5,8 @@
 
 > **Status:** the CRE workflow is **simulated end to end with `cre workflow simulate`** (CRE CLI v1.38.0), including the x402-paying agent.
 > The on-chain write target is the `LegalNotary` receiver contract on **Base Sepolia**; in the simulation the EVM write is a dry run (no `--broadcast`, tx hash `0x0`).
-> Deployment is ready but **not executed**: `LegalNotary` is not deployed yet and no attestation has been written on-chain.
+> Deployment is scripted and **not executed**: `LegalNotary` is not deployed yet and no attestation has been written on-chain.
+> Run `scripts/deploy-base-sepolia.sh` once a funded key and CRE login are available. What that run still needs is listed in [`BLOCKERS.md`](BLOCKERS.md). Do not treat a `0x0` hash as an attestation.
 
 An AI paralegal agent pays **0.01 USDC per call via x402** to run a **Chainlink CRE workflow** that
 1. verifies every contracting party's **LEI against the GLEIF API** (CRE HTTP capability, DON consensus),
@@ -33,6 +34,8 @@ Full sequence diagram, trust model and evidence: **[`docs/ARCHITECTURE.md`](docs
 | `cre/notary/main.ts` | CRE TypeScript workflow (HTTP trigger → HTTP capability → report → EVM write) |
 | `cre/notary/logic.ts` | pure, deterministic checks (LEI ISO 17442 checksum, GLEIF interpretation, clause rules, ABI encoding) |
 | `contracts/src/LegalNotary.sol` | CRE receiver (`IReceiver.onReport`), forwarder-only, optional workflow-ID lock |
+| `scripts/deploy-base-sepolia.sh` | Deploy on Base Sepolia, write `notaryAddress`, `cre workflow simulate --broadcast` |
+| `cre/notary/forwarders.json` | Pinned MockKeystoneForwarder and KeystoneForwarder for Base Sepolia |
 | `gateway/src/x402.ts` | x402 v1 `exact` scheme for Base Sepolia USDC (client sign + server verify; optional facilitator settle) |
 | `gateway/src/gateway.ts` | x402-protected `POST /notarize` → runs the CRE workflow |
 | `gateway/src/runner.ts` | `simulate` = real `cre workflow simulate`; `harness` = local stand-in (same logic, live GLEIF, no chain write) |
@@ -52,7 +55,8 @@ Direct simulation:
 ```bash
 cd cre && cre workflow simulate notary --non-interactive --trigger-index 0 \
   --http-payload "$(cat ../samples/saas-de.json)" -T local-simulation
-# add --broadcast (with CRE_ETH_PRIVATE_KEY of a Base Sepolia test wallet) to really write via the MockKeystoneForwarder
+# A real write is `scripts/deploy-base-sepolia.sh` (deploys, then simulate --broadcast).
+# It needs CRE_ETH_PRIVATE_KEY, Base Sepolia ETH, and `cre login` or CRE_API_KEY. See BLOCKERS.md.
 ```
 Real simulation output (2026-10-16):
 ```
@@ -70,19 +74,31 @@ unlimited liability). Log: `runs/demo-20261017-130655.log`; console: `runs/demo-
 
 Simulated without `--broadcast` and with `notaryAddress` still 0x0, so the EVM write is a dry run (tx hash 0x0).
 
-## Deployment (ready, not executed)
-`LegalNotary` has **not** been deployed, and no on-chain write has happened. Everything needed is in the repo:
-1. `cd contracts && forge create src/LegalNotary.sol:LegalNotary --rpc-url <base-sepolia-rpc> --private-key <test key> --constructor-args <forwarder>`,
-   where `<forwarder>` is the Base Sepolia (Mock)KeystoneForwarder address from `cre workflow supported-chains`.
-2. Put the deployed address in `cre/notary/config.staging.json` → `evms[0].notaryAddress`.
-3. Re-run `cre workflow simulate … --broadcast` with `CRE_ETH_PRIVATE_KEY` of a funded Base Sepolia test wallet to write a real attestation.
+## Deployment (scripted, not executed)
+`LegalNotary` has **not** been deployed, and no on-chain write has happened. `cre/notary/config.staging.json` still has `notaryAddress` `0x0`.
+
+`scripts/deploy-base-sepolia.sh` is the path a funded test key runs:
+
+1. Copy `.env.example` to `.env` (gitignored). Set `CRE_ETH_PRIVATE_KEY` and either `cre login` or `CRE_API_KEY`.
+2. `scripts/deploy-base-sepolia.sh --check` confirms Base Sepolia chain id 84532 and that both forwarders have bytecode. It does not send a transaction.
+3. `scripts/deploy-base-sepolia.sh` deploys `LegalNotary` with the Base Sepolia **MockKeystoneForwarder** (`cre/notary/forwarders.json`), writes that address into `cre/notary/config.staging.json`, then runs `cre workflow simulate notary --broadcast`.
+4. The script exits 0 only after `cast receipt` shows a successful log from that notary and `count()` is non-zero. It writes `deployments/base-sepolia.json` and `runs/broadcast-<utc>.log`. A dry-run hash of `0x0` is a failure.
+
+Constructor argument for this broadcast path, checked against the [CRE forwarder directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts) on 2026-10-22:
+
+| use | contract | Base Sepolia address |
+|---|---|---|
+| `cre workflow simulate --broadcast` | MockKeystoneForwarder | `0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5` |
+| `cre workflow deploy` (not this script's broadcast) | KeystoneForwarder | `0xF8344CFd5c43616a4366C34E3EEE75af79a74482` |
+
+Chain selector name: `ethereum-testnet-sepolia-base-1`. When `cre whoami` works, the script prefers the mock address from `cre workflow supported-chains --output json` if the tenant row differs. Do not point a simulation broadcast at the production forwarder: `onReport` would revert `NotForwarder`. Leave `expectedWorkflowId` unset for simulation; the mock forwarder does not send workflow metadata.
 
 ## Payments
 Default: the gateway **verifies the EIP-3009 authorization locally** (signature, payee, amount, validity window, nonce replay) and
 does **not** settle — no funds move. Set `FACILITATOR_URL=https://x402.org/facilitator` and a Base Sepolia USDC-funded `AGENT_PK` to settle on testnet.
 
 ## Tests
-`cd gateway && npm test` (7: LEI checksum, clause rules, GLEIF interpretation, verdict + ABI payload, x402 verify/replay/underpay/payTo, harness, end-to-end agent with spend policy) · `cd contracts && forge test` (4).
+`cd gateway && npm test` (8: LEI checksum, clause rules, GLEIF interpretation, verdict + ABI payload, x402 verify/replay/underpay/payTo, broadcast rejects a zero tx and an unset notary, harness, end-to-end agent with spend policy) · `cd contracts && forge test` (4).
 
 ## Reuse
 x402 buyer/provider structure and video renderer adapted from `climate-x402`; agent spend-policy idea from `celo-agent`.

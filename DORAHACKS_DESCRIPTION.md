@@ -2,7 +2,7 @@
 
 **AI paralegal agents pay 0.01 USDC per call (x402) to a Chainlink CRE workflow that verifies counterparties in GLEIF, checks a contract's clauses for its jurisdiction, and produces a signed attestation for a Base Sepolia receiver contract.**
 
-> **Status, stated plainly:** the CRE workflow is **simulated end to end with `cre workflow simulate`** (CRE CLI v1.38.0), with the x402-paying agent in the loop. The on-chain write target is the `LegalNotary` contract on **Base Sepolia**. Deployment is **ready but not executed**: the contract is not deployed yet, and in the simulation the EVM write is a dry run (no `--broadcast`, tx hash `0x0`).
+> **Status, stated plainly:** the CRE workflow is **simulated end to end with `cre workflow simulate`** (CRE CLI v1.38.0), with the x402-paying agent in the loop. The on-chain write target is the `LegalNotary` contract on **Base Sepolia**. Deployment is **scripted and not executed**: the contract is not deployed, and in the simulation the EVM write is a dry run (no `--broadcast`, tx hash `0x0`). The command that would deploy and broadcast is `scripts/deploy-base-sepolia.sh`. It has not produced a transaction. See `BLOCKERS.md`.
 
 ## Links
 - 💻 Repo (public, MIT): https://github.com/zwang1111/legal-notary-cre
@@ -37,9 +37,9 @@ End to end behind the x402 gateway (2026-10-17): **PASS 100** for a German SaaS 
 - Successful CRE CLI simulation (log linked above).
 
 ## Honest status
-- `cre workflow build` compiles to WASM. 7 TypeScript tests and 4 Foundry tests pass.
+- `cre workflow build` compiles to WASM. 8 TypeScript tests and 4 Foundry tests pass.
 - `cre workflow simulate` passes standalone and end to end.
-- **Not done yet:** no `LegalNotary` deployment and no on-chain write. The deployment steps are in the README (`forge create` with the Keystone forwarder, set `notaryAddress`, `simulate --broadcast`).
+- **Not done yet:** no `LegalNotary` deployment and no on-chain write. `scripts/deploy-base-sepolia.sh` deploys against the Base Sepolia MockKeystoneForwarder (`0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5`), writes `notaryAddress`, and runs `cre workflow simulate --broadcast`. It stops unless the receipt shows a non-zero attestation. The missing key, CRE login, and Base Sepolia ETH are listed in `BLOCKERS.md`.
 - x402 payments are verified locally by default, so no funds move. Facilitator settlement on Base Sepolia is supported via `FACILITATOR_URL`.
 
 ## Tech
