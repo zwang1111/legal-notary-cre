@@ -15,6 +15,8 @@ Public RPC `https://sepolia.base.org` (chain id `84532`, `0x14a34`):
 
 Addresses come from the CRE forwarder directory, fetched the same day: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts (page last updated 2026-09-18). Chain name in `cre/project.yaml` is `ethereum-testnet-sepolia-base-1`. They are also pinned in `cre/notary/forwarders.json`. EIP-55 checksum of the mock address is the value in that file; the directory prints the same 20 bytes with a different hex case.
 
+`cre workflow supported-chains --output json` (CLI v1.39) returns both on each row. `mockAddress` is the mock forwarder above. `address` is the production forwarder above. The deploy script's broadcast path reads `mockAddress` only. `FORWARDER` overrides that. `FORWARDER_KIND` defaults to `mock`.
+
 `cre workflow supported-chains` was **not** run against a tenant. CRE CLI v1.39.0 is installed here and both of these commands exit 1 before any workflow work:
 
 ```text
@@ -55,7 +57,7 @@ scripts/deploy-base-sepolia.sh
 
 What the second command does:
 
-1. If you are logged in, read the tenant mock forwarder for `ethereum-testnet-sepolia-base-1` from `cre workflow supported-chains --output json`. Otherwise use the pinned MockKeystoneForwarder above.
+1. If you are logged in, read **`mockAddress`** for `ethereum-testnet-sepolia-base-1` from `cre workflow supported-chains --output json`. On CLI v1.39 that field is the MockKeystoneForwarder. The sibling field **`address`** is the production KeystoneForwarder (`0xF8344CFd…`); the script ignores it. Using `address` as the constructor makes `simulate --broadcast` revert `NotForwarder`. If `mockAddress` is absent, the pinned mock above is kept. Set `FORWARDER` to override the constructor; `FORWARDER_KIND=mock` (the default) keeps the broadcast path. `FORWARDER_KIND=production` does not.
 2. `forge create src/LegalNotary.sol:LegalNotary --broadcast --constructor-args <that forwarder>`.
 3. `cast call <notary> "forwarder()(address)"` must match. Then it writes `evms[0].notaryAddress` in `cre/notary/config.staging.json`.
 4. `cd cre && cre -e ../.env workflow simulate notary --non-interactive --trigger-index 0 --http-payload ../samples/saas-de.json -T local-simulation --broadcast`.

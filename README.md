@@ -91,7 +91,9 @@ Constructor argument for this broadcast path, checked against the [CRE forwarder
 | `cre workflow simulate --broadcast` | MockKeystoneForwarder | `0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5` |
 | `cre workflow deploy` (not this script's broadcast) | KeystoneForwarder | `0xF8344CFd5c43616a4366C34E3EEE75af79a74482` |
 
-Chain selector name: `ethereum-testnet-sepolia-base-1`. When `cre whoami` works, the script prefers the mock address from `cre workflow supported-chains --output json` if the tenant row differs. Do not point a simulation broadcast at the production forwarder: `onReport` would revert `NotForwarder`. Leave `expectedWorkflowId` unset for simulation; the mock forwarder does not send workflow metadata.
+Chain selector name: `ethereum-testnet-sepolia-base-1`. When `cre whoami` works, the script reads **`mockAddress`** for that chain from `cre workflow supported-chains --output json` (CRE CLI v1.39). The same row's **`address`** field is the production KeystoneForwarder (`0xF8344CFd…`). Passing that address to a contract you then exercise with `simulate --broadcast` makes `onReport` revert `NotForwarder`. If `mockAddress` is missing, the script keeps the pinned mock above and does not fall back to `address`.
+
+Override the constructor with `FORWARDER` (any address) and `FORWARDER_KIND=mock` (the default). `FORWARDER_KIND=production` selects the KeystoneForwarder pin and refuses `--broadcast`. Leave `expectedWorkflowId` unset for simulation; the mock forwarder does not send workflow metadata.
 
 ## Payments
 Default: the gateway **verifies the EIP-3009 authorization locally** (signature, payee, amount, validity window, nonce replay) and

@@ -4,6 +4,8 @@
 # Default constructor arg is the Base Sepolia MockKeystoneForwarder. That is the
 # contract `cre workflow simulate --broadcast` calls. The production
 # KeystoneForwarder is a different address and will revert this path.
+# `cre workflow supported-chains --output json` has both: `address` is the
+# production forwarder and `mockAddress` is the mock. This script reads mockAddress.
 #
 # Secrets stay in the environment or a gitignored .env. This script never prints
 # CRE_ETH_PRIVATE_KEY or CRE_API_KEY. It does not write a tx hash unless forge
@@ -34,8 +36,10 @@ Env (see .env.example; put them in repo-root .env, which is gitignored):
   CRE_API_KEY           Or run `cre login` first. Required for simulate --broadcast.
   BASE_SEPOLIA_RPC_URL  Deploy/receipt RPC. Default https://sepolia.base.org.
                         Broadcast still uses the URL in cre/project.yaml.
-  FORWARDER             Optional constructor override.
+  FORWARDER             Optional constructor override. With FORWARDER_KIND=mock (the
+                        default) this address is used for simulate --broadcast.
   FORWARDER_KIND        mock (default) or production. Production refuses broadcast.
+                        supported-chains field for mock is `mockAddress`, not `address`.
   FRESH_DEPLOY=1        Deploy a new contract even if config.staging.json is set.
   NOTARY_PAYLOAD        HTTP payload file. Default samples/saas-de.json.
   CRE_TARGET            Default local-simulation.
@@ -89,14 +93,18 @@ need python3
 lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 
 FORWARDER_KIND="${FORWARDER_KIND:-mock}"
+FORWARDER_EXPLICIT=0
 FORWARDER_SOURCE="cre/notary/forwarders.json"
 if [[ -n "${FORWARDER:-}" ]]; then
+  FORWARDER_EXPLICIT=1
   FORWARDER_SOURCE="FORWARDER env"
 elif [[ "$FORWARDER_KIND" == "production" ]]; then
   FORWARDER="$PROD_FORWARDER"
+  FORWARDER_SOURCE="cre/notary/forwarders.json keystoneForwarder"
 else
   FORWARDER="$MOCK_FORWARDER"
   FORWARDER_KIND="mock"
+  FORWARDER_SOURCE="cre/notary/forwarders.json mockKeystoneForwarder"
 fi
 
 if [[ "$CHECK_ONLY" == 0 && -z "${FORWARDER:-}" ]]; then
@@ -121,42 +129,42 @@ refresh_from_cli() {
     echo "supported-chains failed; using pinned MockKeystoneForwarder ${FORWARDER}"
     return 0
   fi
-  addr="$(python3 -c '
-import json, sys
-rows = json.loads(sys.argv[1])
-name = sys.argv[2]
-for row in rows:
-    if row.get("chainName") == name and row.get("address"):
-        print(row["address"])
-        break
-' "$json" "$CHAIN_NAME")"
+  # mockAddress is the simulator forwarder. `address` is the production
+  # KeystoneForwarder and must not be passed to a --broadcast consumer.
+  addr="$(printf '%s' "$json" | python3 scripts/notary_config.py mock-from-chains "$CHAIN_NAME")"
   if [[ -z "$addr" ]]; then
-    echo "supported-chains has no ${CHAIN_NAME} row; using pinned ${FORWARDER}"
+    echo "supported-chains has no mockAddress for ${CHAIN_NAME}."
+    echo "Ignoring the production 'address' field. Using pinned MockKeystoneForwarder ${FORWARDER}"
+    return 0
+  fi
+  if [[ "$(lower "$addr")" == "$(lower "$PROD_FORWARDER")" ]]; then
+    echo "supported-chains mockAddress equals the production KeystoneForwarder ${addr}." >&2
+    echo "Refusing that value. Using pinned MockKeystoneForwarder ${FORWARDER}" >&2
     return 0
   fi
   if [[ "$(lower "$addr")" != "$(lower "$FORWARDER")" ]]; then
-    echo "Tenant mock forwarder ${addr} differs from the docs pin ${FORWARDER}."
-    echo "Using the tenant address from cre workflow supported-chains."
+    echo "Tenant mockAddress ${addr} differs from the docs pin ${FORWARDER}."
+    echo "Using mockAddress from cre workflow supported-chains."
   else
-    echo "supported-chains confirms MockKeystoneForwarder ${addr}"
+    echo "supported-chains mockAddress confirms MockKeystoneForwarder ${addr}"
   fi
   FORWARDER="$addr"
-  FORWARDER_SOURCE="cre workflow supported-chains"
-}
-
-classify() {
-  local f p m
-  f="$(lower "$FORWARDER")"
-  m="$(lower "$MOCK_FORWARDER")"
-  p="$(lower "$PROD_FORWARDER")"
-  if [[ "$f" == "$m" ]]; then FORWARDER_KIND="mock"
-  elif [[ "$f" == "$p" ]]; then FORWARDER_KIND="production"
-  else FORWARDER_KIND="custom"
-  fi
+  FORWARDER_KIND="mock"
+  FORWARDER_SOURCE="cre workflow supported-chains mockAddress"
 }
 
 refresh_from_cli
-classify
+# An explicit FORWARDER that is the known production forwarder must not be
+# treated as the mock. Any other FORWARDER with FORWARDER_KIND=mock is an override.
+if [[ "$(lower "$FORWARDER")" == "$(lower "$PROD_FORWARDER")" ]]; then
+  FORWARDER_KIND="production"
+elif [[ "$(lower "$FORWARDER")" == "$(lower "$MOCK_FORWARDER")" ]]; then
+  FORWARDER_KIND="mock"
+elif [[ "$FORWARDER_EXPLICIT" == 1 && "$FORWARDER_KIND" == "mock" ]]; then
+  FORWARDER_KIND="mock"
+elif [[ "$FORWARDER_SOURCE" == "cre workflow supported-chains mockAddress" ]]; then
+  FORWARDER_KIND="mock"
+fi
 
 echo "Chain: Base Sepolia (${CHAIN_NAME}, id 84532)"
 echo "Forwarder (${FORWARDER_KIND}, ${FORWARDER_SOURCE}): ${FORWARDER}"
