@@ -36,6 +36,28 @@ def load_forwarders() -> dict:
     return json.loads(FORWARDERS.read_text())
 
 
+def mock_forwarder_from_supported_chains(rows: object, chain_name: str) -> str:
+    """Pick MockKeystoneForwarder for simulate --broadcast.
+
+    CRE CLI v1.39 JSON rows have both fields:
+      address      production KeystoneForwarder (NotForwarder if used with --broadcast)
+      mockAddress  MockKeystoneForwarder
+    Never fall back to address. An empty result means the caller should keep its pin.
+    """
+    if isinstance(rows, dict):
+        rows = rows.get("chains") or rows.get("rows") or []
+    if not isinstance(rows, list):
+        return ""
+    for row in rows:
+        if not isinstance(row, dict) or row.get("chainName") != chain_name:
+            continue
+        mock = row.get("mockAddress") or ""
+        if is_address(mock) and not is_zero_address(mock):
+            return mock
+        return ""
+    return ""
+
+
 def read_notary_address(text: str) -> str:
     match = NOTARY_RE.search(text)
     if not match:
@@ -103,6 +125,25 @@ def self_test() -> None:
     assert is_address(pins["keystoneForwarder"])
     assert pins["mockKeystoneForwarder"].lower() != pins["keystoneForwarder"].lower()
 
+    chain = pins["chainSelectorName"]
+    rows = [{
+        "chainName": chain,
+        "chainSelector": 10344971235874465080,
+        "address": pins["keystoneForwarder"],
+        "mockAddress": pins["mockKeystoneForwarder"],
+    }]
+    picked = mock_forwarder_from_supported_chains(rows, chain)
+    assert picked.lower() == pins["mockKeystoneForwarder"].lower()
+    assert picked.lower() != pins["keystoneForwarder"].lower()
+    # Production `address` must not be used when mockAddress is missing.
+    assert mock_forwarder_from_supported_chains(
+        [{"chainName": chain, "address": pins["keystoneForwarder"]}], chain
+    ) == ""
+    assert mock_forwarder_from_supported_chains(
+        [{"chainName": chain, "address": pins["keystoneForwarder"], "mockAddress": "0x" + "0" * 40}],
+        chain,
+    ) == ""
+
     zero = "0x" + "0" * 64
     real = "0x" + "ab" * 32
     assert not is_nonzero_tx(zero)
@@ -117,11 +158,17 @@ def self_test() -> None:
     parsed = parse_forge_create(forged)
     assert parsed["address"].lower() == "0x5fbdb2315678afecb367f032d93f642f64180aa3"
 
-    cfg = (ROOT / "cre" / "notary" / "config.staging.json").read_text()
+    cfg_file = (ROOT / "cre" / "notary" / "config.staging.json").read_text()
+    record = json.loads((ROOT / "deployments" / "base-sepolia.json").read_text())
+    assert record["attestationOk"] is True
+    assert read_notary_address(cfg_file).lower() == record["address"].lower() == "0x8e457ed0e713094e4ab70a098233e5816a44271b"
+    assert record["attestationTx"].lower() == "0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119"
+    assert record["forwarder"].lower() == pins["mockKeystoneForwarder"].lower()
+    cfg = cfg_file.replace(read_notary_address(cfg_file), "0x" + "0" * 40)
     assert is_zero_address(read_notary_address(cfg))
     updated = set_notary_address(cfg, pins["mockKeystoneForwarder"])
     assert read_notary_address(updated).lower() == pins["mockKeystoneForwarder"].lower()
-    assert is_zero_address(read_notary_address(cfg))
+    assert read_notary_address(cfg_file).lower() == record["address"].lower()
     try:
         set_notary_address(cfg, "0x" + "0" * 40)
         raise AssertionError("zero address was accepted")
@@ -130,6 +177,8 @@ def self_test() -> None:
 
     log = (ROOT / "runs" / "cre-simulate-20261016.log").read_text()
     assert not is_nonzero_tx(extract_tx(log))
+    broadcast = (ROOT / "runs" / "broadcast-20261022T170550Z.log").read_text()
+    assert extract_tx(broadcast).lower() == record["attestationTx"].lower()
     escaped = '"{\\"verdict\\":\\"PASS\\",\\"tx\\":\\"%s\\"}"' % real
     assert extract_tx(escaped) == real
     plain = '{"verdict":"PASS","tx":"%s"}' % real
@@ -153,6 +202,8 @@ def main(argv: list[str]) -> None:
         self_test()
     elif cmd == "show-forwarders":
         print(json.dumps(load_forwarders()))
+    elif cmd == "mock-from-chains":
+        print(mock_forwarder_from_supported_chains(json.loads(sys.stdin.read()), argv[2]))
     elif cmd == "read-address":
         print(read_notary_address(Path(argv[2]).read_text()))
     elif cmd == "set-address":
