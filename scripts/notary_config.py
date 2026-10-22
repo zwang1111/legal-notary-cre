@@ -158,11 +158,17 @@ def self_test() -> None:
     parsed = parse_forge_create(forged)
     assert parsed["address"].lower() == "0x5fbdb2315678afecb367f032d93f642f64180aa3"
 
-    cfg = (ROOT / "cre" / "notary" / "config.staging.json").read_text()
+    cfg_file = (ROOT / "cre" / "notary" / "config.staging.json").read_text()
+    record = json.loads((ROOT / "deployments" / "base-sepolia.json").read_text())
+    assert record["attestationOk"] is True
+    assert read_notary_address(cfg_file).lower() == record["address"].lower() == "0x8e457ed0e713094e4ab70a098233e5816a44271b"
+    assert record["attestationTx"].lower() == "0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119"
+    assert record["forwarder"].lower() == pins["mockKeystoneForwarder"].lower()
+    cfg = cfg_file.replace(read_notary_address(cfg_file), "0x" + "0" * 40)
     assert is_zero_address(read_notary_address(cfg))
     updated = set_notary_address(cfg, pins["mockKeystoneForwarder"])
     assert read_notary_address(updated).lower() == pins["mockKeystoneForwarder"].lower()
-    assert is_zero_address(read_notary_address(cfg))
+    assert read_notary_address(cfg_file).lower() == record["address"].lower()
     try:
         set_notary_address(cfg, "0x" + "0" * 40)
         raise AssertionError("zero address was accepted")
@@ -171,6 +177,8 @@ def self_test() -> None:
 
     log = (ROOT / "runs" / "cre-simulate-20261016.log").read_text()
     assert not is_nonzero_tx(extract_tx(log))
+    broadcast = (ROOT / "runs" / "broadcast-20261022T170550Z.log").read_text()
+    assert extract_tx(broadcast).lower() == record["attestationTx"].lower()
     escaped = '"{\\"verdict\\":\\"PASS\\",\\"tx\\":\\"%s\\"}"' % real
     assert extract_tx(escaped) == real
     plain = '{"verdict":"PASS","tx":"%s"}' % real

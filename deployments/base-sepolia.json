@@ -1,0 +1,16 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "chainSelectorName": "ethereum-testnet-sepolia-base-1",
+  "contract": "LegalNotary",
+  "address": "0x8e457Ed0e713094e4AB70a098233E5816A44271B",
+  "deployer": "0x448a352156018b7BF507d3aae696905270458828",
+  "deployTx": "0x40a5895c731fb2127d6e3a70e2fcfa012b06cad2b932bd79ea7a0a12f61f7159",
+  "forwarder": "0x82300bd7c3958625581cc2F77bC6464dcEcDF3e5",
+  "forwarderKind": "mock",
+  "forwarderSource": "FORWARDER env",
+  "attestationTx": "0x16904215515adb37651bfe661d1b9988c3db198567afab0aebe37127c22fb119",
+  "attestationOk": true,
+  "notaryCount": "1",
+  "log": "runs/broadcast-20261022T170550Z.log"
+}
