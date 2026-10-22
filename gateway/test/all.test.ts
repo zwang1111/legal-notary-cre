@@ -6,7 +6,7 @@ import { decodeAbiParameters, parseAbiParameters } from "viem";
 import { validLei, checkClauses, checkParty, decide, encodeAttestation } from "../../cre/notary/logic.ts";
 import { requirements, pay, verifyLocal } from "../src/x402.ts";
 import { buildGateway } from "../src/gateway.ts";
-import { runHarness } from "../src/runner.ts";
+import { assertDeployedNotary, nonzeroBroadcastTx, runHarness } from "../src/runner.ts";
 import { runAgent } from "../src/agent.ts";
 
 const good = JSON.parse(readFileSync(new URL("../../samples/saas-de.json", import.meta.url), "utf8"));
@@ -50,6 +50,15 @@ test("x402 exact: valid authorization verifies; replay, underpay, wrong payTo re
   assert.equal((await verifyLocal(h, req, used) as any).reason, "nonce replay");
   assert.equal((await verifyLocal(await pay(a, { ...req, maxAmountRequired: "1" }), req, used) as any).reason, "underpaid");
   assert.equal((await verifyLocal(await pay(a, { ...req, payTo: "0x00000000000000000000000000000000000000A1" }), req, used) as any).reason, "wrong payTo");
+});
+test("broadcast rejects a dry-run tx and an undeployed notary", () => {
+  const zero = "0x" + "00".repeat(32);
+  const real = "0x" + "ab".repeat(32);
+  assert.equal(nonzeroBroadcastTx(zero), undefined);
+  assert.equal(nonzeroBroadcastTx("0x0"), undefined);
+  assert.equal(nonzeroBroadcastTx(real), real);
+  assert.throws(() => assertDeployedNotary("0x" + "00".repeat(20)), /deploy-base-sepolia/);
+  assert.equal(assertDeployedNotary("0x" + "11".repeat(20)), "0x" + "11".repeat(20));
 });
 test("harness runs workflow logic with GLEIF responses", async () => {
   const r = await runHarness(good, mockFetch); assert.equal(r.verdict, "PASS");

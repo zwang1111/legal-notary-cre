@@ -6,7 +6,11 @@ interface IReceiver { function onReport(bytes calldata metadata, bytes calldata 
 interface IERC165 { function supportsInterface(bytes4 id) external view returns (bool); }
 
 /// @title LegalNotary - onchain registry of CRE-verified contract attestations.
-/// @dev Only the Chainlink KeystoneForwarder (or MockKeystoneForwarder in simulation) may write.
+/// @dev Only the Chainlink forwarder passed to the constructor may write.
+///      `cre workflow simulate --broadcast` calls MockKeystoneForwarder; a workflow
+///      registered with `cre workflow deploy` calls KeystoneForwarder. Addresses for
+///      Base Sepolia are in `cre/notary/forwarders.json`. Do not set expectedWorkflowId
+///      before a simulation broadcast: the mock forwarder does not supply workflow metadata.
 ///      Stores the document hash, never the document. Not legal advice; an audit trail.
 contract LegalNotary is IReceiver, IERC165 {
     struct Attestation { uint8 verdict; uint8 score; bytes32 findingsHash; bytes32 partiesHash; string jurisdiction; address payer; uint64 timestamp; }

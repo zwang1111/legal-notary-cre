@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # One-command demo. Testnet / local only; no funds move unless FACILITATOR_URL + funded AGENT_PK are set.
+# CRE_MODE=broadcast does not deploy LegalNotary. Run scripts/deploy-base-sepolia.sh first.
 set -euo pipefail; cd "$(dirname "$0")/.."; export PATH="$HOME/.cre/bin:$HOME/.foundry/bin:$PATH"
 mkdir -p runs; LOG="runs/demo-$(date +%Y%m%d-%H%M%S).log"
 echo "== 1. unit + e2e tests";  (cd gateway && npm test 2>&1 | grep -E "^# (tests|pass|fail)")

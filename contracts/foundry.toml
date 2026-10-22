@@ -3,3 +3,6 @@ src = "src"
 test = "test"
 out = "out"
 libs = []
+
+[rpc_endpoints]
+base_sepolia = "https://sepolia.base.org"
