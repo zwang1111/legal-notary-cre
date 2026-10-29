@@ -1,5 +1,7 @@
 # Video script (~3:20, silent captions; rendered by scripts/render-video.py → /workspace/legal-cre-demo.mp4)
 
+The published demo is https://github.com/zwang1111/legal-notary-cre/raw/main/demo.mp4. These captions describe that recording (x402 → `cre workflow simulate`, dry-run write). They are not the current chain status. `LegalNotary` was later deployed on Base Sepolia; see `DORAHACKS_DESCRIPTION.md`.
+
 1. (0:00) Title — "Legal Notary on Chainlink CRE: AI agents pay per call with x402 for verifiable contract checks."
 2. (0:18) Problem — agents review contracts; KYB and compliance are manual, private, unprovable; API keys don't suit agents.
 3. (0:42) Architecture — agent → x402 gateway (402, 0.01 USDC) → signed EIP-3009 → CRE HTTP trigger → GLEIF + clause checks → report → LegalNotary on Base Sepolia (write target; dry run in simulation, not deployed).
